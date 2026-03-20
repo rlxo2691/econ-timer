@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경제수업 발언 시간 기록기</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            max-width: 900px; /* 2열 배치를 위해 너비를 넓혔습니다 */
+            margin: 20px auto;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        /* 2열 그리드 레이아웃 설정 */
+        #tracker-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px 20px;
+        }
+        .student-row {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            gap: 10px;
+        }
+        .student-number {
+            font-weight: bold;
+            color: #7f8c8d;
+            background: #ecf0f1;
+            padding: 4px 8px;
+            border-radius: 4px;
+            min-width: 25px;
+            text-align: center;
+        }
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        .time-display {
+            font-size: 18px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #2c3e50;
+            width: 90px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 65px;
+        }
+        .btn-start {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-start:hover { background-color: #2980b9; }
+        
+        .btn-stop {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-stop:hover { background-color: #c0392b; }
+
+        /* 모바일 화면에서는 다시 1열로 보이도록 반응형 처리 */
+        @media (max-width: 600px) {
+            #tracker-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>📈 경제수업 발언 시간 기록기</h2>
+    <div id="tracker-container"></div>
+
+    <script>
+        const container = document.getElementById('tracker-container');
+        const studentsCount = 15;
+        const timers = {}; 
+
+        // 밀리초(ms)를 mm:ss:dd (분:초:0.01초) 형식으로 변환하는 함수
+        function formatTime(ms) {
+            const totalHundredths = Math.floor(ms / 10); // 0.01초 단위
+            const hundredths = totalHundredths % 100;
+            const totalSeconds = Math.floor(totalHundredths / 100);
+            const seconds = totalSeconds % 60;
+            const minutes = Math.floor(totalSeconds / 60);
+
+            const pad = (num) => num.toString().padStart(2, '0');
+            return `${pad(minutes)}:${pad(seconds)}:${pad(hundredths)}`;
+        }
+
+        for (let i = 1; i <= studentsCount; i++) {
+            // 시간을 정확하게 계산하기 위해 startTime과 elapsedTime을 사용합니다
+            timers[i] = { isRunning: false, startTime: 0, elapsedTime: 0, interval: null };
+
+            const row = document.createElement('div');
+            row.className = 'student-row';
+
+            // 1. 학생 번호
+            const numberLabel = document.createElement('div');
+            numberLabel.className = 'student-number';
+            numberLabel.textContent = i;
+
+            // 2. 이름 입력칸
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.placeholder = `학생 이름`;
+
+            // 3. 시간 표시칸 (mm:ss:dd)
+            const timeDisplay = document.createElement('div');
+            timeDisplay.className = 'time-display';
+            timeDisplay.textContent = '00:00:00';
+
+            // 4. Start / Stop 버튼
+            const actionBtn = document.createElement('button');
+            actionBtn.className = 'btn-start';
+            actionBtn.textContent = 'Start';
+
+            actionBtn.onclick = () => {
+                if (timers[i].isRunning) {
+                    // Stop 버튼을 눌렀을 때
+                    clearInterval(timers[i].interval);
+                    timers[i].isRunning = false;
+                    actionBtn.textContent = 'Start';
+                    actionBtn.className = 'btn-start';
+                    
+                    // 정지한 시점의 정확한 누적 시간 저장
+                    timers[i].elapsedTime = Date.now() - timers[i].startTime;
+                    timeDisplay.textContent = formatTime(timers[i].elapsedTime);
+                } else {
+                    // Start 버튼을 눌렀을 때
+                    timers[i].isRunning = true;
+                    actionBtn.textContent = 'Stop';
+                    actionBtn.className = 'btn-stop';
+                    
+                    // 시작 시간 기록 (기존 누적 시간이 있다면 빼줌)
+                    timers[i].startTime = Date.now() - timers[i].elapsedTime;
+                    
+                    // 10밀리초(0.01초)마다 화면 업데이트
+                    timers[i].interval = setInterval(() => {
+                        const currentElapsed = Date.now() - timers[i].startTime;
+                        timeDisplay.textContent = formatTime(currentElapsed);
+                    }, 10); 
+                }
+            };
+
+            // 화면에 요소들 조립
+            row.appendChild(numberLabel);
+            row.appendChild(nameInput);
+            row.appendChild(timeDisplay);
+            row.appendChild(actionBtn);
+            container.appendChild(row);
+        }
+    </script>
+</body>
+</html>
