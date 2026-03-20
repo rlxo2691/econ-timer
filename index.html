@@ -51,11 +51,11 @@
             color: #2c3e50;
         }
         .time-display {
-            font-size: 18px;
+            font-size: 20px; /* 숫자가 잘 보이도록 크기를 살짝 키웠습니다 */
             font-family: monospace;
             font-weight: bold;
             color: #2c3e50;
-            width: 90px;
+            width: 70px;
             text-align: center;
             letter-spacing: 1px;
         }
@@ -81,7 +81,6 @@
         }
         .btn-stop:hover { background-color: #c0392b; }
 
-        /* 리셋 버튼 영역 스타일 */
         .reset-container {
             text-align: center;
             margin-top: 30px;
@@ -116,7 +115,6 @@
 
     <script>
         const container = document.getElementById('tracker-container');
-        // 제공해주신 13명의 학생 명단
         const studentNames = [
             "조우진", "김재윤", "박영진", "이소윤", "서동현", 
             "송윤아", "김민준", "부건희", "윤태경", "김시후", 
@@ -124,18 +122,16 @@
         ];
         const timers = []; 
 
+        // 시간을 mm:ss 형식으로 변환하는 함수 (밀리초 기준)
         function formatTime(ms) {
-            const totalHundredths = Math.floor(ms / 10);
-            const hundredths = totalHundredths % 100;
-            const totalSeconds = Math.floor(totalHundredths / 100);
-            const seconds = totalSeconds % 60;
+            const totalSeconds = Math.floor(ms / 1000);
             const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
 
             const pad = (num) => num.toString().padStart(2, '0');
-            return `${pad(minutes)}:${pad(seconds)}:${pad(hundredths)}`;
+            return `${pad(minutes)}:${pad(seconds)}`;
         }
 
-        // 학생 수(13명)만큼 반복해서 화면 생성
         studentNames.forEach((name, index) => {
             const timerData = { isRunning: false, startTime: 0, elapsedTime: 0, interval: null };
             
@@ -144,21 +140,21 @@
 
             const numberLabel = document.createElement('div');
             numberLabel.className = 'student-number';
-            numberLabel.textContent = index + 1; // 1번부터 시작
+            numberLabel.textContent = index + 1;
 
             const nameInput = document.createElement('input');
             nameInput.type = 'text';
-            nameInput.value = name; // 이름 미리 채워두기
+            nameInput.value = name;
 
             const timeDisplay = document.createElement('div');
             timeDisplay.className = 'time-display';
-            timeDisplay.textContent = '00:00:00';
-            timerData.displayElement = timeDisplay; // 초기화할 때 쓰기 위해 저장
+            timeDisplay.textContent = '00:00'; // 초기 화면을 00:00으로 변경
+            timerData.displayElement = timeDisplay;
 
             const actionBtn = document.createElement('button');
             actionBtn.className = 'btn-start';
             actionBtn.textContent = 'Start';
-            timerData.btnElement = actionBtn; // 초기화할 때 쓰기 위해 저장
+            timerData.btnElement = actionBtn;
 
             actionBtn.onclick = () => {
                 if (timerData.isRunning) {
@@ -176,14 +172,15 @@
                     
                     timerData.startTime = Date.now() - timerData.elapsedTime;
                     
+                    // 0.1초(100ms)마다 확인하여 1초 단위로 정확히 화면을 넘깁니다.
                     timerData.interval = setInterval(() => {
                         const currentElapsed = Date.now() - timerData.startTime;
                         timeDisplay.textContent = formatTime(currentElapsed);
-                    }, 10); 
+                    }, 100); 
                 }
             };
 
-            timers.push(timerData); // 배열에 저장
+            timers.push(timerData);
 
             row.appendChild(numberLabel);
             row.appendChild(nameInput);
@@ -192,21 +189,18 @@
             container.appendChild(row);
         });
 
-        // 전체 초기화 함수
         function resetAllTimers() {
             if (confirm("모든 학생의 발언 시간을 0으로 초기화하시겠습니까?")) {
                 timers.forEach(timerData => {
-                    // 타이머가 돌고 있다면 멈춤
                     if (timerData.isRunning) {
                         clearInterval(timerData.interval);
                         timerData.isRunning = false;
                         timerData.btnElement.textContent = 'Start';
                         timerData.btnElement.className = 'btn-start';
                     }
-                    // 시간 데이터를 0으로 되돌리고 화면 업데이트
                     timerData.elapsedTime = 0;
                     timerData.startTime = 0;
-                    timerData.displayElement.textContent = '00:00:00';
+                    timerData.displayElement.textContent = '00:00'; // 리셋 시에도 00:00으로 표기
                 });
             }
         }
