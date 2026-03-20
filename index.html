@@ -26,11 +26,12 @@
         .student-row {
             display: flex;
             align-items: center;
+            justify-content: center; /* 안의 요소들이 가운데로 예쁘게 모이도록 수정 */
             background: #fff;
             padding: 12px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            gap: 10px;
+            gap: 15px; /* 간격을 살짝 넓혀서 답답하지 않게 조절 */
         }
         .student-number {
             font-weight: bold;
@@ -42,16 +43,18 @@
             text-align: center;
         }
         input[type="text"] {
-            flex-grow: 1;
+            /* flex-grow: 1; 이 부분을 지우고 너비를 고정했습니다 */
+            width: 90px; 
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 16px;
             font-weight: bold;
             color: #2c3e50;
+            text-align: center; /* 이름이 가운데 오도록 수정 */
         }
         .time-display {
-            font-size: 20px; /* 숫자가 잘 보이도록 크기를 살짝 키웠습니다 */
+            font-size: 20px;
             font-family: monospace;
             font-weight: bold;
             color: #2c3e50;
@@ -94,6 +97,7 @@
             font-size: 16px;
             width: auto;
             border-radius: 6px;
+            cursor: pointer;
         }
         .btn-reset-all:hover { background-color: #732d91; }
 
@@ -122,7 +126,6 @@
         ];
         const timers = []; 
 
-        // 시간을 mm:ss 형식으로 변환하는 함수 (밀리초 기준)
         function formatTime(ms) {
             const totalSeconds = Math.floor(ms / 1000);
             const minutes = Math.floor(totalSeconds / 60);
@@ -148,7 +151,7 @@
 
             const timeDisplay = document.createElement('div');
             timeDisplay.className = 'time-display';
-            timeDisplay.textContent = '00:00'; // 초기 화면을 00:00으로 변경
+            timeDisplay.textContent = '00:00';
             timerData.displayElement = timeDisplay;
 
             const actionBtn = document.createElement('button');
@@ -172,7 +175,6 @@
                     
                     timerData.startTime = Date.now() - timerData.elapsedTime;
                     
-                    // 0.1초(100ms)마다 확인하여 1초 단위로 정확히 화면을 넘깁니다.
                     timerData.interval = setInterval(() => {
                         const currentElapsed = Date.now() - timerData.startTime;
                         timeDisplay.textContent = formatTime(currentElapsed);
@@ -200,7 +202,7 @@
                     }
                     timerData.elapsedTime = 0;
                     timerData.startTime = 0;
-                    timerData.displayElement.textContent = '00:00'; // 리셋 시에도 00:00으로 표기
+                    timerData.displayElement.textContent = '00:00';
                 });
             }
         }
